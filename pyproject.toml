@@ -1,7 +1,7 @@
 [project]
-name = "mqtt-gateway-template"
+name = "anker-mqtt-gateway"
 version = "0.1.0"
-description = "Template MQTT gateway"
+description = "Simple MQTT gateway for Anker SOLIX Solarbank 4 E5000 Pro"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = ["paho-mqtt>=2.1.0", "python-dotenv>=1.2.2"]
+dependencies = ["pymodbus>=3.10.0", "paho-mqtt>=2.1.0", "python-dotenv>=1.2.2"]

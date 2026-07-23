@@ -11,8 +11,10 @@ from settings import load_settings
 
 # Configure logging
 logging.basicConfig(
-	level=logging.INFO,
-	format='%(asctime)s - %(name)-25s - %(levelname)-8s - %(message)s',
+    encoding='utf-8', 
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)-8s - %(module)-15s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S'
 )
 LOG = logging.getLogger(__name__)
 

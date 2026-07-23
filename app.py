@@ -5,7 +5,7 @@ import math
 import signal
 import time
 
-from reader import ReadError, SnapshotReader
+from modbus_reader import ModbusReadError, ModbusSnapshotReader
 from mqtt_gateway import MqttGateway, MqttPublishError
 from settings import load_settings
 
@@ -18,15 +18,15 @@ LOG = logging.getLogger(__name__)
 
 
 def main() -> None:
-	LOG.info("Starting MQTT Gateway template")
+	LOG.info("Starting Anker Gateway")
 	settings = load_settings()
-	LOG.debug(f"Configuration loaded: reader={settings.reader_host}:{settings.reader_port}, mqtt={settings.mqtt_host}:{settings.mqtt_port}")
-	reader = SnapshotReader(
-		settings.reader_host,
-		settings.reader_port,
-		settings.reader_timeout_seconds,
+	LOG.debug(f"Configuration loaded: modbus={settings.modbus_host}:{settings.modbus_port}, mqtt={settings.mqtt_host}:{settings.mqtt_port}")
+	reader = ModbusSnapshotReader(
+		settings.modbus_host,
+		settings.modbus_port,
+		settings.modbus_timeout_seconds,
 	)
-	LOG.debug("SnapshotReader initialized")
+	LOG.debug("ModbusSnapshotReader initialized")
 	publisher = MqttGateway(
 		settings.mqtt_host,
 		settings.mqtt_port,
@@ -61,21 +61,21 @@ def main() -> None:
 				LOG.debug(f"Waiting {sleep_duration:.3f}s until the next scheduled run")
 				time.sleep(sleep_duration)
 
-			LOG.debug("Polling reader for snapshot")
+			LOG.debug("Polling Modbus for snapshot")
 			try:
 				snapshot = reader.read_snapshot()
 				LOG.debug(f"Snapshot read successfully with {len(snapshot)} fields")
-			except ReadError as exc:
-				LOG.error(f"Reader failed: {exc}")
+			except ModbusReadError as exc:
+				LOG.error(f"Modbus read failed: {exc}")
 				LOG.info("Publishing offline status")
 				try:
 					publisher.publish_offline()
 					LOG.debug("Offline status published")
 				except MqttPublishError as mqtt_exc:
 					LOG.error(f"MQTT publish failed while marking offline: {mqtt_exc}")
-				LOG.info("Reconnecting reader")
+				LOG.info("Reconnecting to Modbus")
 				reader.reconnect()
-				LOG.debug("Reader reconnected")
+				LOG.debug("Modbus reconnected")
 			else:
 				LOG.debug("Publishing snapshot to MQTT")
 				try:
@@ -94,18 +94,17 @@ def main() -> None:
 			if not stop_requested:
 				next_run_time += settings.poll_interval_seconds
 	finally:
-		LOG.info("Shutting down MQTT Gateway template")
+		LOG.info("Shutting down Anker Gateway")
 		try:
 			publisher.publish_offline()
 			LOG.debug("Published offline status during shutdown")
 		except Exception:
 			pass
-		if reader is not None:
-			reader.close()
-			LOG.debug("Reader closed")
+		reader.close()
+		LOG.debug("Modbus reader closed")
 		publisher.close()
 		LOG.debug("MQTT publisher closed")
-		LOG.info("MQTT Gateway template stopped")
+		LOG.info("Anker Gateway stopped")
 
 
 if __name__ == "__main__":

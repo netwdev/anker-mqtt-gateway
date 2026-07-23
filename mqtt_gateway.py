@@ -64,6 +64,7 @@ class MqttGateway:
 
     def publish_offline(self) -> None:
         self._publish_value("status/online", False)
+        self._publish_value("status/battery_status", "offline")
 
     def _publish_value(self, topic_suffix: str, value: object) -> None:
         if value is None:

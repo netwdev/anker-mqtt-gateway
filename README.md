@@ -53,3 +53,10 @@ If `MQTT_USERNAME` is set, `MQTT_PASSWORD` must also be set.
 ```bash
 python app.py
 ```
+
+## References
+
+Ranges and meaning of registers are based on the official home assistant integration for Anker SOLIX Solarbank 4 E5000 Pro:
+https://github.com/anker-charging/ha-anker-solix-official/blob/main/custom_components/anker_solix_official/config/58f0132b5f7979b2cfa43a0eb1fca770053288032386ff6a4da5ed2d72d4ea35.yaml
+
+It was tested on a Anker SOLIX Solarbank 4 E5000 Pro with firmware version 1.0.2.22.

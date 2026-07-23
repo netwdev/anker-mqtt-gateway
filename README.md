@@ -29,5 +29,5 @@ If `MQTT_USERNAME` is set, `MQTT_PASSWORD` must also be set.
 ## Run
 
 ```bash
-python main.py
+python app.py
 ```

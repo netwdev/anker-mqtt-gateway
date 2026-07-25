@@ -3,6 +3,8 @@ Scan all registers (Modbus device ID 1) from the Anker SOLIX Solarbank 4 E5000 P
 
 Known issues:
 - The success counter is reported incorrectly
+- For the anker device: if a single register is requested, the device might return an error. The workaround is to request a block of registers at the exact right address.
+    This is why the ranges were reworked in the test scripts.
 
 """
 
@@ -21,7 +23,7 @@ PORT = int(os.getenv("MODBUS_PORT", "502"))
 
 BLOCK_SIZE = 125
 MAX_ADDRESS = 65535
-REQUEST_DELAY = 0.0000001       # avoid additional delays
+REQUEST_DELAY = 0.01       # avoid additional delays
 SAVE_EVERY = 20
 
 client = ModbusTcpClient(
@@ -80,6 +82,7 @@ def read_block(kind,start,count):
         time.sleep(REQUEST_DELAY)
         stats["requests"]+=1
         if rr.isError():
+            print(f"{kind} {start}: {rr}")
             stats["failed"]+=1
             return None
         stats["success"]+=1
@@ -90,17 +93,19 @@ def read_block(kind,start,count):
         time.sleep(REQUEST_DELAY)
         return None
 
-def read_single(kind,address):
-    r=read_block(kind,address,1)
+def read_single(kind, address):
+    r = read_block(kind, address, 1)
     if r is None:
+        print(f"FAILED {kind} {address}")
         return False
-    results[kind][address]=r[0]
-    print(f"\n  ✓ {kind.upper()} {address} = {r[0]}")
+
+    results[kind][address] = r[0]
+    print(f"{kind} {address} = {r[0]}")
     return True
 
 for kind in ("input","holding"):
     print(f"\n=== Scanning {kind.upper()} registers ===")
-    for start in range(10000,MAX_ADDRESS+1,BLOCK_SIZE):
+    for start in range(0,MAX_ADDRESS+1,BLOCK_SIZE):
         end=min(start+BLOCK_SIZE-1,MAX_ADDRESS)
         print(
             f"\r[{kind.upper():7}] {start:5}-{end:5} | "

@@ -4,6 +4,7 @@ import logging
 
 from pymodbus.client import ModbusTcpClient
 
+from calculations import add_derived_values
 from constants import FIELD_SPECS, REGISTER_RANGES, FieldSpec
 
 LOG = logging.getLogger(__name__)
@@ -59,7 +60,8 @@ class ModbusSnapshotReader:
             for index, value in enumerate(response.registers):
                 registers[start + index] = value
 
-        return {spec.key: self._decode_field(spec, registers) for spec in FIELD_SPECS}
+        snapshot = {spec.key: self._decode_field(spec, registers) for spec in FIELD_SPECS}
+        return add_derived_values(snapshot)
 
     def _read_block(self, register_type: str, start: int, count: int):
         if register_type == "input":

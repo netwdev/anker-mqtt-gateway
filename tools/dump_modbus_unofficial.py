@@ -22,27 +22,17 @@ if not client.connect():
 # ---------------------------------------------------------------------
 
 RANGES = [
+    # Keep each request within Modbus's 125-register limit while covering
+    # only the addresses used by FIELD_SPECS below.
     ("input", 10000, 10124),
-    ("input", 10124, 10248),        # note: intersects with 10000-10124
-    ("input", 10250, 10374),
-    ("input", 10632, 10747),
-    ("input", 10648, 10772),        # note: intersects with 10632-10747
-    ("input", 10649, 10773),        # note: intersects with 10648-10772
-    ("input", 32768, 32892),
-    ("input", 32774, 32898),        # note: intersects with 32768-32892
-    ("input", 60000, 60124),
-    ("input", 60003, 60127),        # note: intersects with 60000-60124
+    ("input", 10156, 10265),
+    ("input", 32768, 32774),
+    ("input", 60000, 60003),
 
     ("holding", 10000, 10124),
-    ("holding", 10124, 10248),        # note: intersects with 10000-10124
-    ("holding", 10250, 10374),
-    ("holding", 10632, 10747),
-    ("holding", 10648, 10772),        # note: intersects with 10632-10747
-    ("holding", 10649, 10773),        # note: intersects with 10648-10772
-    ("holding", 32768, 32892),
-    ("holding", 32774, 32898),        # note: intersects with 32768-32892
-    ("holding", 60000, 60124),
-    ("holding", 60003, 60127),        # note: intersects with 60000-60124
+    ("holding", 10156, 10265),
+    ("holding", 32768, 32774),
+    ("holding", 60000, 60003),
 ]
 
 registers = {}

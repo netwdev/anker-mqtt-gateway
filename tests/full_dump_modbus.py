@@ -293,7 +293,7 @@ for pv_index in (1, 2, 3, 4):
     current = result.get(f"pv{pv_index}_current")
 
     if isinstance(voltage, (int, float)) and isinstance(current, (int, float)):
-        result[f"pv{pv_index}_power"] = voltage * current
+        result[f"pv{pv_index}_power"] = round(voltage * current, 2)
 
 # ---------------------------------------------------------------------
 # Export every unknown register in all formats

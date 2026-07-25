@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import threading
 from datetime import datetime, timezone
 
 import paho.mqtt.client as mqtt
@@ -28,7 +29,18 @@ class MqttGateway:
         self._host = host
         self._port = port
         self._topic_prefix = topic_prefix.rstrip("/")
-        self._client = mqtt.Client(client_id=client_id)
+        # MQTT 3.1.1 does not include a reason code in PUBACK packets, so a
+        # broker can reject a publish because of its ACL without giving the
+        # client enough information to report it. MQTT v5 does, including
+        # 0x87 (Not authorized).
+        self._client = mqtt.Client(
+            callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
+            client_id=client_id,
+            protocol=mqtt.MQTTv5,
+        )
+        self._publish_reason_codes: dict[int, object] = {}
+        self._publish_reason_codes_lock = threading.Lock()
+        self._client.on_publish = self._on_publish
 
         if username and password:
             LOG.debug(f"Setting MQTT credentials for user {username}")
@@ -55,21 +67,47 @@ class MqttGateway:
 
     def publish_snapshot(self, snapshot: dict[str, object]) -> None:
         LOG.debug(f"Publishing snapshot with {len(snapshot)} fields")
+        pending: list[tuple[str, mqtt.MQTTMessageInfo]] = []
         for topic_suffix, key in PUBLISH_POINTS:
-            self._publish_value(topic_suffix, snapshot.get(key))
+            info = self._publish_value(topic_suffix, snapshot.get(key), wait=False)
+            if info is not None:
+                pending.append((topic_suffix, info))
 
-        self._publish_value("status/online", True)
-        self._publish_value("status/last_sync_ts", round(datetime.now(timezone.utc).timestamp(), 3))
+        for topic_suffix, value in (
+            ("status/online", True),
+            ("status/last_sync_ts", round(datetime.now(timezone.utc).timestamp(), 3)),
+        ):
+            info = self._publish_value(topic_suffix, value, wait=False)
+            if info is not None:
+                pending.append((topic_suffix, info))
+
+        for topic_suffix, info in pending:
+            self._wait_for_publish(topic_suffix, info)
         LOG.debug("Snapshot published")
 
     def publish_offline(self) -> None:
-        self._publish_value("status/online", False)
-        self._publish_value("status/battery_status", "offline")
+        pending: list[tuple[str, mqtt.MQTTMessageInfo]] = []
+        for topic_suffix, value in (
+            ("status/online", False),
+            ("status/battery_status", "offline"),
+        ):
+            info = self._publish_value(topic_suffix, value, wait=False)
+            if info is not None:
+                pending.append((topic_suffix, info))
 
-    def _publish_value(self, topic_suffix: str, value: object) -> None:
+        for topic_suffix, info in pending:
+            self._wait_for_publish(topic_suffix, info)
+
+    def _publish_value(
+        self,
+        topic_suffix: str,
+        value: object,
+        *,
+        wait: bool = True,
+    ) -> mqtt.MQTTMessageInfo | None:
         if value is None:
             LOG.debug(f"Skipping publish for {topic_suffix}: value is None")
-            return
+            return None
 
         topic = f"{self._topic_prefix}/{topic_suffix}"
         payload = _encode_payload(value)
@@ -80,10 +118,51 @@ class MqttGateway:
             LOG.error(f"Failed to publish {topic}")
             raise MqttPublishError(f"Failed to publish {topic}")
 
-        info.wait_for_publish()
+        if not wait:
+            return info
+
+        self._wait_for_publish(topic_suffix, info)
+
+        return info
+
+    def _wait_for_publish(self, topic_suffix: str, info: mqtt.MQTTMessageInfo) -> None:
+        topic = f"{self._topic_prefix}/{topic_suffix}"
+        try:
+            info.wait_for_publish()
+        except (RuntimeError, ValueError) as exc:
+            LOG.error(f"Failed to publish {topic}: {exc}")
+            raise MqttPublishError(f"Failed to publish {topic}: {exc}") from exc
+
+        with self._publish_reason_codes_lock:
+            reason_code = self._publish_reason_codes.pop(info.mid, None)
+
+        if reason_code is not None and _reason_code_is_failure(reason_code):
+            LOG.error(f"MQTT broker rejected publish to {topic}: {reason_code}")
+            raise MqttPublishError(
+                f"MQTT broker rejected publish to {topic}: {reason_code}"
+            )
+
+    def _on_publish(
+        self,
+        _client: mqtt.Client,
+        _userdata: object,
+        mid: int,
+        reason_code: object,
+        _properties: object,
+    ) -> None:
+        with self._publish_reason_codes_lock:
+            self._publish_reason_codes[mid] = reason_code
 
 
 def _encode_payload(value: object) -> str:
     if isinstance(value, bool):
         return "true" if value else "false"
     return str(value)
+
+
+def _reason_code_is_failure(reason_code: object) -> bool:
+    """Return whether an MQTT v5 PUBACK reason code means rejection."""
+    is_failure = getattr(reason_code, "is_failure", None)
+    if is_failure is not None:
+        return bool(is_failure)
+    return int(reason_code) != 0

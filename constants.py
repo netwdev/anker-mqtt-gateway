@@ -49,6 +49,14 @@ FIELD_SPECS = [
     FieldSpec("max_charge_power", "INT32", 10036, 2),
     FieldSpec("max_discharge_power", "INT32", 10038, 2),
 
+    # Control registers (read back from the device)
+    FieldSpec("operating_mode", "UINT16", 10064, 1),
+    FieldSpec("battery_power_setpoint", "INT32", 10071, 2),
+    FieldSpec("battery_charge_limit", "UINT16", 60000, 1),
+    FieldSpec("battery_discharge_limit", "UINT16", 60001, 1),
+    FieldSpec("battery_reserve_limit", "UINT16", 60002, 1),
+    FieldSpec("battery_reserve_enable", "UINT16", 60003, 1),
+
     # Current power
     FieldSpec("pv_power", "INT32", 10002, 2),
     FieldSpec("third_party_pv_power", "INT32", 10004, 2),
@@ -109,6 +117,12 @@ PUBLISH_POINTS = [
     ("battery/cfg/rated_energy", "rated_energy"),
     ("battery/cfg/max_charge_power", "max_charge_power"),
     ("battery/cfg/max_discharge_power", "max_discharge_power"),
+    ("control/operating_mode", "operating_mode"),
+    ("control/battery_power_setpoint", "battery_power_setpoint"),
+    ("control/battery_charge_limit", "battery_charge_limit"),
+    ("control/battery_discharge_limit", "battery_discharge_limit"),
+    ("control/battery_reserve_limit", "battery_reserve_limit"),
+    ("control/battery_reserve_enable", "battery_reserve_enable"),
 
     # Power (current)
     ("power/curr/pv_power", "pv_power"),

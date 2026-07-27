@@ -180,7 +180,7 @@ FIELDS = [
     ("max_charge_power", 10036, "INT32", 2, 1),
     ("max_discharge_power", 10038, "INT32", 2, 1),
 
-    ("ems_mode_mask", 32774, "UINT16", 1, 1),
+    ("ems_mode_mask", 32774, "UINT16", 1, 1),               # capability bitmask for operational modes; normally 36 (meaning third_party_control and custom_mode), with smart meter: 111 (meaning self_consumption, tou_mode, smart_mode, third_party_control, custom_mode, dynamic_pricing), exact mapping in HA integration
 
     ("device_model_2", 10090, "STRING", 3, 1),              # alias for 32768
     ("device_sw_version_LE", 10118, "STRING_LE", 5, 1),
@@ -209,7 +209,7 @@ FIELDS = [
     # Write Quantities Configuration (Control Type)
     # =======================================================================
 
-    ("operating_mode", 10064, "UINT16", 1, 1),              # "0": "self_consumption", "1": "tou_mode", "2": "smart_mode", "3": "third_party_control", "4": "custom_mode", "5": "socket_overlay_mode", "6": "smart_mode", "7": "dynamic_pricing"
+    ("operating_mode", 10064, "UINT16", 1, 1),              # "0": "self_consumption", "1": "tou_mode", "2": "rapid_charge", "3": "third_party_control", "4": "custom_mode", "5": "socket_overlay_mode", "6": "smart_mode", "7": "dynamic_pricing"
     ("battery_power_setpoint", 10071, "INT32", 2, 1),       # in Watts, Positive: Discharging, Negative: Charging; valid when using third_party_control mode (value=3); in ha docs is the range: 0-10000 but signed?; also range 0-99W has impact on control accuracy
     ("battery_charge_limit", 60000, "UINT16", 1, 1),        # in %
     ("battery_discharge_limit", 60001, "UINT16", 1, 1),     # in %

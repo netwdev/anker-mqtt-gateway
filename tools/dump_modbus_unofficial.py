@@ -153,7 +153,7 @@ FIELDS = [
 
     ("rated_energy", 10250, "UINT32", 2, 10),                   # in kWh; rated energy of the battery; displayed as battery capacity in app
 
-    ("max_charge_power", 10036, "INT32", 2, 1),
+    ("max_charge_power", 10036, "INT32", 2, 1),             # values shown in the app under "Grid power limits"; I'm unable to write values to it
     ("max_discharge_power", 10038, "INT32", 2, 1),
 
     ("ems_mode_mask", 32774, "UINT16", 1, 1),               # capability bitmask for operational modes; normally 36 (meaning third_party_control and custom_mode), with smart meter: 111 (meaning self_consumption, tou_mode, smart_mode, third_party_control, custom_mode, dynamic_pricing), exact mapping in HA integration

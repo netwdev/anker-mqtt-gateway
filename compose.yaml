@@ -1,0 +1,9 @@
+version: "3.8"
+
+services:
+  anker-mqtt-gateway:
+    container_name: anker-mqtt-gateway
+    build: .
+    restart: unless-stopped
+    env_file:
+      - .env

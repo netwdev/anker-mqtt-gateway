@@ -62,6 +62,30 @@ If `MQTT_USERNAME` is set, `MQTT_PASSWORD` must also be set.
 python app.py
 ```
 
+## Docker
+
+Build and run with the same environment variables listed in [Configuration](#configuration). `MODBUS_HOST` and `MQTT_HOST` are required.
+
+```bash
+docker build -t anker-mqtt-gateway .
+docker run --rm \
+  -e MODBUS_HOST=192.168.1.100 \
+  -e MQTT_HOST=192.168.1.200 \
+  anker-mqtt-gateway
+```
+
+Optional variables (`MODBUS_PORT`, `MQTT_PORT`, `MQTT_USERNAME`, `MQTT_PASSWORD`, `MQTT_TOPIC_PREFIX`, `POLL_INTERVAL_SECONDS`, and others) can be passed the same way with `-e`.
+
+### Compose
+
+Copy [`.env.sample`](./.env.sample) to `.env`, set at least `MODBUS_HOST` and `MQTT_HOST`, then:
+
+```bash
+docker compose up -d --build
+```
+
+The included [`compose.yaml`](./compose.yaml) builds the image and loads configuration from `.env`.
+
 ## References
 
 Ranges and meaning of registers are based on the [official home assistant integration for Anker SOLIX Solarbank 4 E5000 Pro](https://github.com/anker-charging/ha-anker-solix-official/blob/main/custom_components/anker_solix_official/config/58f0132b5f7979b2cfa43a0eb1fca770053288032386ff6a4da5ed2d72d4ea35.yaml)

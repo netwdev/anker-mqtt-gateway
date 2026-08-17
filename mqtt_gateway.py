@@ -24,11 +24,15 @@ class MqttGateway:
         topic_prefix: str,
         username: str | None = None,
         password: str | None = None,
+        qos: int = 1,
+        retain: bool = True,
     ) -> None:
-        LOG.debug(f"Initializing MqttGateway for {host}:{port} with client_id={client_id}, topic_prefix={topic_prefix}")
+        LOG.debug(f"Initializing MqttGateway for {host}:{port} with client_id={client_id}, topic_prefix={topic_prefix}, qos={qos}, retain={retain}")
         self._host = host
         self._port = port
         self._topic_prefix = topic_prefix.rstrip("/")
+        self._qos = qos
+        self._retain = retain
         # MQTT 3.1.1 does not include a reason code in PUBACK packets, so a
         # broker can reject a publish because of its ACL without giving the
         # client enough information to report it. MQTT v5 does, including
@@ -112,7 +116,7 @@ class MqttGateway:
         topic = f"{self._topic_prefix}/{topic_suffix}"
         payload = _encode_payload(value)
         LOG.debug(f"Publishing {topic_suffix}={payload}")
-        info = self._client.publish(topic, payload=payload, qos=1, retain=True)
+        info = self._client.publish(topic, payload=payload, qos=self._qos, retain=self._retain)
 
         if info.rc != mqtt.MQTT_ERR_SUCCESS:
             LOG.error(f"Failed to publish {topic}")

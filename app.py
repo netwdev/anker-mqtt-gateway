@@ -35,6 +35,8 @@ def main() -> None:
 		settings.mqtt_topic_prefix,
 		settings.mqtt_username,
 		settings.mqtt_password,
+		settings.mqtt_qos,
+		settings.mqtt_retain,
 	)
 	LOG.debug("MqttGateway initialized")
 

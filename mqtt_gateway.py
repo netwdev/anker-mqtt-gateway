@@ -26,8 +26,9 @@ class MqttGateway:
         password: str | None = None,
         qos: int = 1,
         retain: bool = True,
+        last_will: bool = True,
     ) -> None:
-        LOG.debug(f"Initializing MqttGateway for {host}:{port} with client_id={client_id}, topic_prefix={topic_prefix}, qos={qos}, retain={retain}")
+        LOG.debug(f"Initializing MqttGateway for {host}:{port} with client_id={client_id}, topic_prefix={topic_prefix}, qos={qos}, retain={retain}, last_will={last_will}")
         self._host = host
         self._port = port
         self._topic_prefix = topic_prefix.rstrip("/")
@@ -49,6 +50,16 @@ class MqttGateway:
         if username and password:
             LOG.debug(f"Setting MQTT credentials for user {username}")
             self._client.username_pw_set(username=username, password=password)
+
+        if last_will:
+            will_topic = f"{self._topic_prefix}/status/online"
+            self._client.will_set(
+                will_topic,
+                payload=_encode_payload(False),
+                qos=qos,
+                retain=retain,
+            )
+            LOG.debug(f"MQTT last will set for {will_topic}")
 
         self._client.reconnect_delay_set(min_delay=1, max_delay=30)
 

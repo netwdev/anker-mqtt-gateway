@@ -25,6 +25,7 @@ Topics are prefixed with `MQTT_TOPIC_PREFIX`:
 - `temperature/internal`
 
 All published values use the configured MQTT QoS (default 1). Messages are retained when `MQTT_RETAIN` is true (the default).
+When `MQTT_LAST_WILL` is true (the default), the broker publishes `status/online=false` if the gateway disconnects unexpectedly.
 Broker publish failures—including insufficient topic permissions—raise an error and trigger the MQTT reconnect path.
 
 QoS 0 does not wait for a broker acknowledgement, so there is no check that the published data was received.
@@ -55,6 +56,7 @@ Set these environment variables before starting the gateway:
 - `MQTT_TOPIC_PREFIX` optional, default `anker`
 - `MQTT_QOS` optional, default `1` (`0`, `1`, or `2`)
 - `MQTT_RETAIN` optional, default `true`
+- `MQTT_LAST_WILL` optional, default `true`
 - `POLL_INTERVAL_SECONDS` optional, default `5`
 - `RECONNECT_DELAY_SECONDS` optional, default `2`
 
@@ -78,7 +80,7 @@ docker run --rm \
   anker-mqtt-gateway
 ```
 
-Optional variables (`MODBUS_PORT`, `MQTT_PORT`, `MQTT_USERNAME`, `MQTT_PASSWORD`, `MQTT_TOPIC_PREFIX`, `MQTT_QOS`, `MQTT_RETAIN`, `POLL_INTERVAL_SECONDS`, and others) can be passed the same way with `-e`.
+Optional variables (`MODBUS_PORT`, `MQTT_PORT`, `MQTT_USERNAME`, `MQTT_PASSWORD`, `MQTT_TOPIC_PREFIX`, `MQTT_QOS`, `MQTT_RETAIN`, `MQTT_LAST_WILL`, `POLL_INTERVAL_SECONDS`, and others) can be passed the same way with `-e`.
 
 ### Compose
 

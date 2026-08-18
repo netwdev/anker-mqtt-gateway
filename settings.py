@@ -20,6 +20,7 @@ class Settings:
     mqtt_topic_prefix: str
     mqtt_qos: int
     mqtt_retain: bool
+    mqtt_last_will: bool
     poll_interval_seconds: float
     reconnect_delay_seconds: float
 
@@ -54,14 +55,8 @@ def load_settings() -> Settings:
         LOG.error("MQTT_QOS must be 0, 1, or 2")
         raise RuntimeError("MQTT_QOS must be 0, 1, or 2") from None
 
-    mqtt_retain_raw = os.getenv("MQTT_RETAIN", "true").strip().lower()
-    if mqtt_retain_raw in ("1", "true", "yes"):
-        mqtt_retain = True
-    elif mqtt_retain_raw in ("0", "false", "no"):
-        mqtt_retain = False
-    else:
-        LOG.error("MQTT_RETAIN must be true or false")
-        raise RuntimeError("MQTT_RETAIN must be true or false")
+    mqtt_retain = _load_bool_env("MQTT_RETAIN", "true")
+    mqtt_last_will = _load_bool_env("MQTT_LAST_WILL", "true")
 
     settings = Settings(
         modbus_host=modbus_host,
@@ -75,8 +70,19 @@ def load_settings() -> Settings:
         mqtt_topic_prefix=os.getenv("MQTT_TOPIC_PREFIX", "anker"),
         mqtt_qos=mqtt_qos,
         mqtt_retain=mqtt_retain,
+        mqtt_last_will=mqtt_last_will,
         poll_interval_seconds=float(os.getenv("POLL_INTERVAL_SECONDS", "5")),
         reconnect_delay_seconds=float(os.getenv("RECONNECT_DELAY_SECONDS", "2")),
     )
-    LOG.debug(f"Settings loaded: modbus={settings.modbus_host}:{settings.modbus_port}, mqtt={settings.mqtt_host}:{settings.mqtt_port}, qos={settings.mqtt_qos}, retain={settings.mqtt_retain}, poll_interval={settings.poll_interval_seconds}s, reconnect_delay={settings.reconnect_delay_seconds}s")
+    LOG.debug(f"Settings loaded: modbus={settings.modbus_host}:{settings.modbus_port}, mqtt={settings.mqtt_host}:{settings.mqtt_port}, qos={settings.mqtt_qos}, retain={settings.mqtt_retain}, last_will={settings.mqtt_last_will}, poll_interval={settings.poll_interval_seconds}s, reconnect_delay={settings.reconnect_delay_seconds}s")
     return settings
+
+
+def _load_bool_env(name: str, default: str) -> bool:
+    raw = os.getenv(name, default).strip().lower()
+    if raw in ("1", "true", "yes"):
+        return True
+    if raw in ("0", "false", "no"):
+        return False
+    LOG.error(f"{name} must be true or false")
+    raise RuntimeError(f"{name} must be true or false")

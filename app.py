@@ -37,6 +37,7 @@ def main() -> None:
 		settings.mqtt_password,
 		settings.mqtt_qos,
 		settings.mqtt_retain,
+		settings.mqtt_last_will,
 	)
 	LOG.debug("MqttGateway initialized")
 

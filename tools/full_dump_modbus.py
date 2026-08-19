@@ -154,41 +154,40 @@ FIELDS = [
 
     ("battery_status", 10001, "UINT16", 1, 1),
     ("battery_soc", 10014, "UINT16", 1, 1),
-    ("battery_soh", 10015, "UINT16", 1, 1),                     # likely state of health (SOH) in %     # TODO: confirm;
-    ("battery_power", 10008, "INT32", 2, 1),                    # in W; The battery's reported power flow; (positive: discharging, negative: charging)
-    ("battery_internal_power", 10254, "INT32", 2, 1),           # in W; The corresponding power measured closer to the battery internally, including the difference caused by conversion losses; (positive: charging, negative: discharging)    # TODO: confirm whether self-consumption is included in this value
-    ("battery_soc_2", 10256, "UINT16", 1, 1),                   # likely a duplicate of 10014
+    ("battery_soh", 10015, "UINT16", 1, 1),
+    ("battery_power", 10008, "INT32", 2, 1),
+    ("battery_internal_power", 10254, "INT32", 2, 1),
+    ("battery_soc_2", 10256, "UINT16", 1, 1),
 
     ("pv_power", 10002, "INT32", 2, 1),
     ("third_party_pv_power", 10004, "INT32", 2, 1),
 
-    ("load_power", 10010, "INT32", 2, 1),                       # in W; current load of the house (sum of all phases that are importing power); For use with external power meter (recommended/required)    # TODO: check if UINT32 is sufficient
-    ("grid_power", 10012, "INT32", 2, 1),                       # in W; current power importing/exporting from/to the grid (sum of all phases); (positive: importing, negative: exporting); For use with external power meter (recommended/required)
+    ("load_power", 10010, "INT32", 2, 1),
+    ("grid_power", 10012, "INT32", 2, 1),
 
-    ("ac_grid_output_power", 10208, "INT32", 2, 1),             # in W; Inverter AC Output (pv power + battery power); # TODO: confirm whether this is only output, not input and if UINT32 is sufficient
+    ("ac_grid_output_power", 10208, "INT32", 2, 1),
 
-    ("pv_total_generation", 10018, "UINT32", 2, 10),            # in kWh; energy that came from the solar panels; displayed as pv usage in app;
-    ("load_total", 10026, "UINT32", 2, 10),                     # in kWh; energy that went into the house; displayed as home usage in app;
-    ("grid_export_total", 10030, "UINT32", 2, 10),              # in kWh; energy that went into the grid; displayed as grid export in app;
-    # grid_import_total is not available but likely calculated as grid_import = load_total + battery_charge_total + grid_export_total - pv_total_generation - discharge_energy_total
-    ("ac_grid_energy_total", 10034, "UINT32", 2, 10),           # in kWh; total AC energy produced by the inverter and sent to the grid; mostly slightly higher than grid_export_total          # TODO: confirm
+    ("pv_total_generation", 10018, "UINT32", 2, 10),
+    ("load_total", 10026, "UINT32", 2, 10),
+    ("grid_export_total", 10030, "UINT32", 2, 10),
+    ("ac_grid_energy_total", 10034, "UINT32", 2, 10),
     ("battery_charge_total", 10022, "UINT32", 2, 10),
-    ("charge_energy_total", 10262, "UINT32", 2, 10),            # likely alias for 10022
+    ("charge_energy_total", 10262, "UINT32", 2, 10),
     ("discharge_energy_total", 10264, "UINT32", 2, 10),
 
-    ("rated_energy", 10250, "UINT32", 2, 10),                   # in kWh; rated energy of the battery; displayed as battery capacity in app
+    ("rated_energy", 10250, "UINT32", 2, 10),
 
-    ("max_charge_power", 10036, "INT32", 2, 1),             # values shown in the app under "Grid power limits"; I'm unable to write values to it
+    ("max_charge_power", 10036, "INT32", 2, 1),
     ("max_discharge_power", 10038, "INT32", 2, 1),
 
-    ("ems_mode_mask", 32774, "UINT16", 1, 1),               # capability bitmask for operational modes; normally 36 (meaning third_party_control and custom_mode), with smart meter: 111 (meaning self_consumption, tou_mode, smart_mode, third_party_control, custom_mode, dynamic_pricing), exact mapping in HA integration
+    ("ems_mode_mask", 32774, "UINT16", 1, 1),
 
-    ("device_model_2", 10090, "STRING", 3, 1),              # alias for 32768
+    ("device_model_2", 10090, "STRING", 3, 1),
     ("device_sw_version_LE", 10118, "STRING_LE", 5, 1),
 
-    ("internal_temperature", 10156, "INT16", 1, 10),        # aka battery_temperature
+    ("internal_temperature", 10156, "INT16", 1, 10),
 
-    ("pv1_voltage", 10167, "INT16", 1, 10),                 # notice: they're signed, not unsigned. At night the inverter reports small negative ADC offsets, so unsigned decoding produces nonsense like 655 A.
+    ("pv1_voltage", 10167, "INT16", 1, 10),
     ("pv1_current", 10168, "INT16", 1, 100),
     ("pv2_voltage", 10169, "INT16", 1, 10),
     ("pv2_current", 10170, "INT16", 1, 100),
@@ -201,54 +200,21 @@ FIELDS = [
     ("grid_frequency", 10213, "UINT16", 1, 100),
     ("backup_grid_frequency", 10238, "UINT16", 1, 100),
     ("grid_voltage", 10199, "UINT16", 1, 10),
-    ("phase_a_voltage", 10202, "UINT16", 1, 10),            # on SOLIX X1 this depends on the operating mode but on the SOLIX E5000 Pro it seems to always be the same as the grid voltage 
-    # Couldn't find valid power factor register             # TODO: find out if the inverter has a power factor register and if so, add it here
+    ("phase_a_voltage", 10202, "UINT16", 1, 10),
 
-    ("system_time", 10060, "UINT32", 2, 1),                 # seconds since 1970-01-01 00:00:00 UTC
+    ("system_time", 10060, "UINT32", 2, 1),
 
     # =======================================================================
     # Write Quantities Configuration (Control Type)
     # =======================================================================
 
-    ("operating_mode", 10064, "UINT16", 1, 1),              # "0": "self_consumption", "1": "tou_mode", "2": "rapid_charge", "3": "third_party_control", "4": "custom_mode", "5": "socket_overlay_mode", "6": "smart_mode", "7": "dynamic_pricing"
-    ("battery_power_setpoint", 10071, "INT32", 2, 1),       # in Watts, Positive: Discharging, Negative: Charging; valid when using third_party_control mode (value=3); in ha docs is the range: 0-10000 but signed?; also range 0-99W has impact on control accuracy
-    ("battery_charge_limit", 60000, "UINT16", 1, 1),        # in %
-    ("battery_discharge_limit", 60001, "UINT16", 1, 1),     # in %
-    ("battery_reserve_limit", 60002, "UINT16", 1, 1),       # in %; enabled with "battery_reserve_enable"
-    ("battery_reserve_enable", 60003, "UINT16", 1, 1),      # "backup_soc_enable" in docs but really is whether the battery reserve function is enabled or not, 0 = disabled, 1 = enabled; confirmed as writeable
-
-    # I believe the load port can't be controlled via modbus but register 10229 is 9 when active (meaning unknown)
-    # ignoring Export Power Limit Control Mode/Value and Import Power Limit Control Mode/Value for now, as they don't seem to be relevant
-    # same for Com disconnect Time with VPP
-    # 10212 and 10237 also seem to be some kind of grid frequency
-    # 10187 seems to be an alias for 10018
-
-
+    ("operating_mode", 10064, "UINT16", 1, 1),
+    ("battery_power_setpoint", 10071, "INT32", 2, 1),
+    ("battery_charge_limit", 60000, "UINT16", 1, 1),
+    ("battery_discharge_limit", 60001, "UINT16", 1, 1),
+    ("battery_reserve_limit", 60002, "UINT16", 1, 1),
+    ("battery_reserve_enable", 60003, "UINT16", 1, 1),
 ]
-"""
-Unknown non-zero registers:
-- 
-- 10040
-- 10041 (bitmask?)
-- 10059 (constant?)
-- 10063
-- 10070
-- 10073/10074
-- 10075/10076 (constant?)
-- 10089 (bitmask?)
-- 10099 (bitmask?)
-- 10123/10124 (bitmask?)
-- 10125 (bitmask?)
-- 10129/10130
-- 10132/10133 (constant?)
-- 10166
-- 10223/10224
-- 10226/10227
-- 10229/10230 (see note above about load port)
-- 10233/10234
-- 10252
-- 10253
-"""
 
 known_registers = set()
 

@@ -8,21 +8,8 @@ Currently supported devices:
 
 ## MQTT topics
 
-Topics are prefixed with `MQTT_TOPIC_PREFIX`:
-
-- `device/model`, `device/sn`, `device/sw_version`, `device/system_time`
-- `status/online`, `status/battery_status`, `status/ems_mode_mask`, `status/last_sync_ts`
-- `battery/curr/battery_soc`, `battery/curr/battery_soh`, `battery/curr/battery_power`, `battery/curr/battery_internal_power`
-- `battery/cfg/rated_energy`, `battery/cfg/max_charge_power`, `battery/cfg/max_discharge_power`
-- `control/operating_mode`, `control/battery_power_setpoint`
-- `control/battery_charge_limit`, `control/battery_discharge_limit`, `control/battery_reserve_limit`, `control/battery_reserve_enable`
-- `power/curr/pv_power`, `power/curr/pv_power_derived`, `power/curr/third_party_pv_power`
-- `power/curr/load_power`, `power/curr/grid_power`, `power/curr/ac_grid_output_power`
-- `power/cnt/pv_total_generation`, `power/cnt/load_total`, `power/cnt/grid_export_total`
-- `power/cnt/ac_grid_energy_total`, `power/cnt/battery_charge_total`, `power/cnt/charge_energy_total`, `power/cnt/discharge_energy_total`
-- `pv/{1..4}/voltage`, `pv/{1..4}/current`, `pv/{1..4}/power`
-- `grid/voltage`, `grid/current`, `grid/frequency`, `grid/backup_frequency`, `grid/phase_a_voltage`
-- `temperature/internal`
+Field meanings, units, and sign conventions are documented in [FIELDS.md](./FIELDS.md).
+Topics are prefixed with `MQTT_TOPIC_PREFIX` (default `anker`).
 
 All published values use the configured MQTT QoS (default 1). Messages are retained when `MQTT_RETAIN` is true (the default).
 When `MQTT_LAST_WILL` is true (the default), the broker publishes `status/online=false` if the gateway disconnects unexpectedly.

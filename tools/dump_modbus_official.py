@@ -111,13 +111,11 @@ FIELDS = [
     ("pv_power", 10002, "INT32", 2, 1),
     ("third_party_pv_power", 10004, "INT32", 2, 1),
 
-    ("battery_charging_power", 10008, "INT32", 2, 1),
-    ("battery_discharging_power", 10008, "INT32", 2, 1),
+    ("battery_power", 10008, "INT32", 2, 1),
 
     ("load_power", 10010, "INT32", 2, 1),
 
-    ("grid_import_power", 10012, "INT32", 2, 1),
-    ("grid_export_power", 10012, "INT32", 2, 1),
+    ("grid_power", 10012, "INT32", 2, 1),
 
     ("ac_grid_output_power", 10208, "INT32", 2, 1),
 
@@ -162,19 +160,6 @@ for name, addr, dtype, count, gain in FIELDS:
 
     if isinstance(value, (int, float)) and gain != 1:
         value = value / gain
-
-    # Split signed power sensors like the HA integration
-    if name == "battery_charging_power":
-        value = max(-value, 0)
-
-    elif name == "battery_discharging_power":
-        value = max(value, 0)
-
-    elif name == "grid_import_power":
-        value = max(value, 0)
-
-    elif name == "grid_export_power":
-        value = max(-value, 0)
 
     result[name] = value
 

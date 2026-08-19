@@ -12,7 +12,7 @@ Topics are prefixed with `MQTT_TOPIC_PREFIX`:
 
 - `device/model`, `device/sn`, `device/sw_version`, `device/system_time`
 - `status/online`, `status/battery_status`, `status/ems_mode_mask`, `status/last_sync_ts`
-- `battery/curr/battery_soc`, `battery/curr/battery_soh`, `battery/curr/battery_power`, `battery/curr/battery_power_real`
+- `battery/curr/battery_soc`, `battery/curr/battery_soh`, `battery/curr/battery_power`, `battery/curr/battery_internal_power`
 - `battery/cfg/rated_energy`, `battery/cfg/max_charge_power`, `battery/cfg/max_discharge_power`
 - `control/operating_mode`, `control/battery_power_setpoint`
 - `control/battery_charge_limit`, `control/battery_discharge_limit`, `control/battery_reserve_limit`, `control/battery_reserve_enable`

@@ -154,26 +154,27 @@ FIELDS = [
 
     ("battery_status", 10001, "UINT16", 1, 1),
     ("battery_soc", 10014, "UINT16", 1, 1),
-    ("battery_soh", 10015, "UINT16", 1, 1),                     # likely state of health (SOH) in %     # TODO: confirm; 
-    ("battery_power", 10008, "INT32", 2, 1),                    # in W; needs to be inverted
-    ("battery_power_real", 10254, "INT32", 2, 1),               # in W; +charge/-discharge; slightly higher than battery_power; likely the actual power being drawn from the battery including self-consumption, while battery_power is the requested power from the battery
+    ("battery_soh", 10015, "UINT16", 1, 1),                     # likely state of health (SOH) in %     # TODO: confirm;
+    ("battery_power", 10008, "INT32", 2, 1),                    # in W; The battery's reported power flow; (positive: discharging, negative: charging)
+    ("battery_internal_power", 10254, "INT32", 2, 1),           # in W; The corresponding power measured closer to the battery internally, including the difference caused by conversion losses; (positive: charging, negative: discharging)    # TODO: confirm whether self-consumption is included in this value
     ("battery_soc_2", 10256, "UINT16", 1, 1),                   # likely a duplicate of 10014
 
     ("pv_power", 10002, "INT32", 2, 1),
     ("third_party_pv_power", 10004, "INT32", 2, 1),
 
-    ("load_power", 10010, "INT32", 2, 1),                       # in W; current load from the house? For use with external power meter (required)?   # TODO: confirm
-    ("grid_power", 10012, "INT32", 2, 1),                       # in W; current power that goes into the house/grid
+    ("load_power", 10010, "INT32", 2, 1),                       # in W; current load of the house (sum of all phases that are importing power); For use with external power meter (recommended/required)    # TODO: check if UINT32 is sufficient
+    ("grid_power", 10012, "INT32", 2, 1),                       # in W; current power importing/exporting from/to the grid (sum of all phases); (positive: importing, negative: exporting); For use with external power meter (recommended/required)
 
-    ("ac_grid_output_power", 10208, "INT32", 2, 1),             # in W; AC Output; current power from the device to the house/grid? needs to be inverted  # TODO: confirm
+    ("ac_grid_output_power", 10208, "INT32", 2, 1),             # in W; Inverter AC Output (pv power + battery power); # TODO: confirm whether this is only output, not input and if UINT32 is sufficient
 
-    ("pv_total_generation", 10018, "UINT32", 2, 10),            # in kWh; energy that came from the solar panels
+    ("pv_total_generation", 10018, "UINT32", 2, 10),            # in kWh; energy that came from the solar panels; displayed as pv usage in app;
     ("load_total", 10026, "UINT32", 2, 10),                     # in kWh; energy that went into the house; displayed as home usage in app;
-    ("grid_export_total", 10030, "UINT32", 2, 10),              # in kWh; energy that went into the grid; displayed as grid export in app;      # TODO: confirm
+    ("grid_export_total", 10030, "UINT32", 2, 10),              # in kWh; energy that went into the grid; displayed as grid export in app;
+    # grid_import_total is not available but likely calculated as grid_import = load_total + battery_charge_total + grid_export_total - pv_total_generation - discharge_energy_total
     ("ac_grid_energy_total", 10034, "UINT32", 2, 10),           # in kWh; total AC energy produced by the inverter and sent to the grid; mostly slightly higher than grid_export_total          # TODO: confirm
     ("battery_charge_total", 10022, "UINT32", 2, 10),
     ("charge_energy_total", 10262, "UINT32", 2, 10),            # likely alias for 10022
-    ("discharge_energy_total", 10264, "UINT32", 2, 10), 
+    ("discharge_energy_total", 10264, "UINT32", 2, 10),
 
     ("rated_energy", 10250, "UINT32", 2, 10),                   # in kWh; rated energy of the battery; displayed as battery capacity in app
 
@@ -187,7 +188,7 @@ FIELDS = [
 
     ("internal_temperature", 10156, "INT16", 1, 10),        # aka battery_temperature
 
-    ("pv1_voltage", 10167, "INT16", 1, 10),                 # TODO: Confirm: Notice they're signed, not unsigned. Apparently at night the inverter reports small negative ADC offsets, so unsigned decoding produces nonsense like 655 A.
+    ("pv1_voltage", 10167, "INT16", 1, 10),                 # notice: they're signed, not unsigned. At night the inverter reports small negative ADC offsets, so unsigned decoding produces nonsense like 655 A.
     ("pv1_current", 10168, "INT16", 1, 100),
     ("pv2_voltage", 10169, "INT16", 1, 10),
     ("pv2_current", 10170, "INT16", 1, 100),
@@ -196,7 +197,7 @@ FIELDS = [
     ("pv4_voltage", 10173, "INT16", 1, 10),
     ("pv4_current", 10174, "INT16", 1, 100),
 
-    ("grid_current", 10205, "UINT16", 1, 100),     
+    ("grid_current", 10205, "UINT16", 1, 100),
     ("grid_frequency", 10213, "UINT16", 1, 100),
     ("backup_grid_frequency", 10238, "UINT16", 1, 100),
     ("grid_voltage", 10199, "UINT16", 1, 10),
@@ -282,9 +283,6 @@ for name, addr, dtype, count, gain in FIELDS:
 
     if isinstance(value, (int, float)) and gain != 1:
         value = value / gain
-
-    if name == "battery_power" or name == "ac_grid_output_power":
-        value = -value  # Invert the battery power to match the expected sign convention
 
     result[name] = value
 

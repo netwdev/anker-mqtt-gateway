@@ -86,15 +86,6 @@ class ModbusSnapshotReader:
         if isinstance(value, (int, float)) and spec.scale != 1:
             value = value / spec.scale
 
-        if spec.key == "battery_charging_power" and value is not None:
-            value = max(-value, 0)
-        elif spec.key == "battery_discharging_power" and value is not None:
-            value = max(value, 0)
-        elif spec.key == "grid_import_power" and value is not None:
-            value = max(value, 0)
-        elif spec.key == "grid_export_power" and value is not None:
-            value = max(-value, 0)
-
         return value
 
 

@@ -43,7 +43,7 @@ FIELD_SPECS = [
     #FieldSpec("battery_soc_2", "UINT16", 10256, 1),
     FieldSpec("battery_soh", "UINT16", 10015, 1),
     FieldSpec("battery_power", "INT32", 10008, 2),
-    FieldSpec("battery_power_real", "INT32", 10254, 2),
+    FieldSpec("battery_internal_power", "INT32", 10254, 2),
 
     FieldSpec("rated_energy", "UINT32", 10250, 2, 10),
     FieldSpec("max_charge_power", "INT32", 10036, 2),
@@ -113,7 +113,7 @@ PUBLISH_POINTS = [
     #("battery/curr/battery_soc_2", "battery_soc_2"),
     ("battery/curr/battery_soh", "battery_soh"),
     ("battery/curr/battery_power", "battery_power"),
-    ("battery/curr/battery_power_real", "battery_power_real"),
+    ("battery/curr/battery_internal_power", "battery_internal_power"),
     ("battery/cfg/rated_energy", "rated_energy"),
     ("battery/cfg/max_charge_power", "max_charge_power"),
     ("battery/cfg/max_discharge_power", "max_discharge_power"),

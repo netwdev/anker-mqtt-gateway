@@ -66,7 +66,7 @@ Observed values:
 - `battery_power` is the battery's reported power flow. Positive: discharging. Negative: charging.
 - `battery_internal_power` is the corresponding power measured closer to the battery internally, including conversion losses. Positive: charging. Negative: discharging. **TODO: confirm whether self-consumption is included.**
 - `rated_energy` is the rated battery capacity shown in the app.
-- `max_charge_power` and `max_discharge_power` are the values shown in the app under "Grid power limits". Writes to these registers have not succeeded.
+- `max_charge_power` and `max_discharge_power` are the values shown in the app under "Grid power limits". They are **grid** limits (max power from/to the grid), not device charge/discharge or import/export limits. The device can still charge using the configured export power limit. Writes to these registers have not succeeded. **TODO: the export power limit does not appear to be exposed over Modbus.**
 
 ## Current power
 
@@ -181,7 +181,7 @@ These holding registers are writable. The gateway currently only reads them back
 
 The load port does not appear to be controllable via Modbus. Register 10229 is `9` when the load port is active.
 
-Export/import power-limit control mode and value, and Com disconnect time with VPP, are ignored for now.
+Export/import power-limit control mode and value, and Com disconnect time with VPP, are ignored for now. **TODO: find the export power limit register**; it is not `max_charge_power` / `max_discharge_power` (those are grid from/to limits) and does not appear to be exposed over Modbus.
 
 ## Official dump aliases
 

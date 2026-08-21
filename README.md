@@ -103,6 +103,7 @@ At least up to firmware version 1.0.2.30:
 
 - The device is very strict about the start register on a modbus read request. Often a request with a bigger count and earlier start register is needed while a single count read of the same register fails. This is likely a bug in the device firmware.
   For example, reading register 32775 with a count of 1 fails, but reading register 32774 with a count of 2 succeeds.
+- Only **three of four MPPT string V/I channels** exist on Modbus (`10167–10172`). The fourth physical input is live in the Anker app, but X1-style PV4 at `10173–10174` is unimplemented (invalid start; batched reads return silent zeros). That is the same firmware behavior the [official HA AE103 yaml](https://github.com/anker-charging/ha-anker-solix-official/blob/main/custom_components/anker_solix_official/config/58f0132b5f7979b2cfa43a0eb1fca770053288032386ff6a4da5ed2d72d4ea35.yaml#L27-L31) documents for `0x8007` / `parallel_capability_mask`. The official Home Assistant integration does not publish per-string PV at all. Details are in [FIELDS.md](./FIELDS.md#pv-strings).
 
 ## License
 

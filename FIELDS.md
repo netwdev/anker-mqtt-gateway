@@ -118,6 +118,21 @@ Observed values:
 
 Voltage and current are signed. At night the inverter reports small negative ADC offsets; decoding them as unsigned produces nonsense values such as 655 A.
 
+PV1–3 at `10167–10172` are confirmed on this E5000 Pro (FW 1.0.2.30). The gateway still publishes `pv/4/*` from `10173`/`10174`, but those reads are **not a live fourth string** (always 0 while the Anker app shows PV4). See [README](./README.md#discoveriesbugs).
+
+This firmware exposes PV1–3 as a **closed 6-register object**: every address `10167`–`10172` is a valid read start; **`10173` is not**. That is the same rule as other implemented scalars (`10156` temperature, `10183`, `10187`). So this is not “PV4 exists but needs a different count from `10167`”. The PCS string table on Modbus ends after three V/I pairs.
+
+Those six registers sit inside the SOLIX X1 8-string V/I map (`10167`–`10182`). On X1, PV4 is `10173`/`10174` and total PV is INT32 at `10183`. On this E5000 Pro:
+
+- `10173`/`10174` (X1 PV4) and `10175`–`10182` (X1 PV5–8) are unimplemented (invalid start → exception 2; batched reads return silent zeros). Same firmware behavior the official HA AE103 yaml documents for `0x8007` (`parallel_capability_mask`): a batch that spans an unimplemented register appends a silent zero, while a dedicated read of that address returns Illegal Data Address, so the two cases cannot be distinguished ([`58f0132b…yaml` L27–L31](https://github.com/anker-charging/ha-anker-solix-official/blob/main/custom_components/anker_solix_official/config/58f0132b5f7979b2cfa43a0eb1fca770053288032386ff6a4da5ed2d72d4ea35.yaml#L27-L31)).
+- X1 `10130` “number of MPPTs” reads `21505`, not `4`.
+- X1 `10183` “total PV power” INT32 stays `140`–`150` and does **not** track `pv_power` (`10002`) or the PV1–3 `V*I` gap. The low word behaves like `14.0`–`15.0` V (pack nominal is 16 VDC).
+- Official Anker HA for E5000 / Max / Max AC never publishes per-string PV. It skips `10157`–`10207` entirely. Four-channel Solarbank telemetry elsewhere is **watt channels** (`solar_power_1`…`solar_power_4` on SB2 Pro / SB3 cloud MQTT), not this V/I table.
+
+Input vs holding match. No fourth 16–50 V pair in `10000`–`10800`, `10632`–`10773`, `32768`–`32820`, or `60000`–`60124`. `pv_power` is ~10–40 W above PV1–3 `V*I` (10 W resolution); no other register tracked that remainder as PV4 power.
+
+**TODO:** PV4 is visible in the Anker app / cloud path; it is not in this Modbus map on FW 1.0.2.30. Do not treat MQTT `pv/4/*` as a live string until a register is found.
+
 Derived (not read from Modbus):
 
 | Field | MQTT | Notes |
@@ -211,6 +226,7 @@ These addresses have been observed as non-zero and are not mapped yet. `tools/fu
 - 10129 / 10130
 - 10132 / 10133 (constant?)
 - 10166
+- 10184 (14–16 V; likely battery pack voltage, not PV4)
 - 10223 / 10224
 - 10226 / 10227
 - 10229 / 10230 (see load port note above)
